@@ -1,0 +1,27 @@
+<meta charset="UTF-8">
+<script>
+
+function pulaLinha() {
+    document.write("<br>");
+}
+
+function mostra(frase) {
+    document.write(frase);
+    pulaLinha();
+}
+
+var num_Pensado = Math.round(Math.random() * 10	);
+
+for(var chance = 3 ; chance !== 0; chance--)
+{
+	var chute = parseInt(prompt("digite seu chute: "));
+	if (chute == num_Pensado)
+	{
+		mostra("Você acertou");
+		break;
+	}else
+		{
+			mostra("Errou!");
+		}
+}
+</script>

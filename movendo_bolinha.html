@@ -1,0 +1,280 @@
+<canvas width="960" height="540"></canvas>
+
+<script>
+
+    var tela = document.querySelector('canvas');
+    var pincel = tela.getContext('2d');
+    pincel.fillStyle = 'lightgray';
+	const SCREEN_W = 960;
+	const SCREEN_H = 540;
+	const NAVE_W = 100;
+	const NAVE_H = 50;
+	const MAX_INI = 10;
+    pincel.fillRect(0, 0, SCREEN_W, SCREEN_H);
+	var TIRO_SAIU, ONLINE, COLI1, COLI2, SCORE, EV, VEL;
+
+    function makeStruct(names) 
+	{
+	var names = names.split(' ');
+	var count = names.length;
+	function constructor() 
+	{
+		for (var i = 0; i < count; i++) 
+		{
+		this[names[i]] = arguments[i];
+		}
+	}
+	return constructor;
+	}
+	// declarando estruturas
+	var nave = makeStruct("x y vel dir_x dir_y cor");
+	var bloco = makeStruct("x y cor w h");
+	var tiro = makeStruct("x y vel r velr cor dir_x dir_y");
+	/*
+	var inimigo = makeStruct("x y vel r cor");
+	// funções de inicialização
+	function initGlobais()
+	{
+		TIRO_SAIU = 0;
+		ONLINE = 0;
+		SCORE = 0;
+		EV=0;
+		VEL=0;
+	}
+	*/
+	function initNave(nave)
+	{
+		nave.x = 10 + NAVE_W;
+		nave.y = SCREEN_H/2;
+		nave.vel = 4;
+		nave.dir_x = 0;
+		nave.dir_y = 0;
+		nave.cor = 'blue';
+	}
+	
+	function initBloco(bloco)
+	{
+		bloco.x = SCREEN_W + (Math.round(Math.random())*10)%(SCREEN_W);
+		bloco.y = (Math.round(Math.random())*10)%(4*SCREEN_H/5);
+		bloco.w = SCREEN_W + (Math.round(Math.random())*10)%(SCREEN_W);
+		bloco.h = SCREEN_H/5 + (Math.round(Math.random())*10)%(2*SCREEN_H/5);
+		bloco.cor = 'gray';
+	}
+
+	function initTiro(tiro)
+	{
+		tiro.x = 10 + NAVE_W;
+		tiro.y = SCREEN_H/2;
+		tiro.r = 2;
+		tiro.velr = 0.25;
+		tiro.vel = 8;
+		tiro.cor = 'red';
+		tiro.dir_x = 0;
+		tiro.dir_r = 0;
+	}
+/*
+	function initInimigo(inimigo)
+	{
+		inimigo.r = 7+(Math.round(Math.random())*10)%65;
+		inimigo.x = SCREEN_W + (Math.round(Math.random())*10)%(SCREEN_W - inimigo.r) + inimigo.r;
+		inimigo.y = (Math.round(Math.random())*10)%(SCREEN_H - inimigo.r) + inimigo.r;
+		inimigo.vel = 1+(Math.round(Math.random())*10)%8;
+		inimigo.cor = 'black';
+	}
+	
+	// desenhos 
+	void desenhaCenario(){
+		pincel.clearRect(0, 0, SCREEN_W, SCREEN_H);
+		pincel.fillStyle = 'lightgray';
+		pincel.fillRect(0, 0, SCREEN_W, SCREEN_H);
+	}
+	*/
+
+	function desenhaNave(nave){
+		pincel.fillStyle = nave.cor;
+		pincel.beginPath();
+		pincel.moveTo(nave.x,nave.y);
+		pincel.lineTo(nave.x - NAVE_W,nave.y - NAVE_H/2);
+		pincel.lineTo(nave.x - NAVE_W,nave.y + NAVE_H/2);
+		pincel.fill();
+	}
+
+	function desenhaBloco(bloco)
+	{
+		pincel.fillStyle= bloco.cor;
+		pincel.fillRect(bloco.x,bloco.y,bloco.x + bloco.w, bloco.y + bloco.h);
+	}
+
+	function desenhaTiro(tiro)
+	{
+		pincel.fillStyle= tiro.cor;
+		pincel.beginPath();
+		pincel.arc(tiro.x, tiro.y, tiro.r, 0 , 2*3.14);
+		pincel.fill();
+	}
+/*
+	void desenhaInimigo(Inimigo inimigo[], int n){
+		
+		int i;
+		for(i = 0; i<n ; i++){
+			al_draw_filled_circle(inimigo[i].x, inimigo[i].y, inimigo[i].r, inimigo[i].cor);
+			//printf("\ndesenhou%d", i);
+		}
+		//printf("desenhou");
+	}
+	*/
+	
+	function atualizaNave(nave){
+		if(((nave.y + (nave.dir_y * nave.vel) + NAVE_H/2)<SCREEN_H)&&(nave.y + (nave.dir_y * nave.vel) - NAVE_H/2)>0)
+		{
+		nave.y += nave.dir_y * nave.vel;
+		}
+		if(((nave.x + (nave.dir_x * nave.vel) - NAVE_W)>0) && (nave.x + (nave.dir_x * nave.vel) <SCREEN_W))
+		{
+			nave.x += nave.dir_x * nave.vel;
+		}
+	}
+	function atualizaBloco(bloco)
+	{
+	bloco.x -= 1;
+	
+	if(bloco.x + bloco.w <0)
+		{
+			initBloco(bloco);
+		}	
+	}
+	
+	function atualizaTiro(tiro, nave){
+	//int espaco=0; //saiu;
+	if(TIRO_SAIU == 0){
+		tiro.y = nave.y;
+		tiro.x = nave.x;
+	}else {
+		tiro.x += tiro.vel;
+		if(tiro.x > SCREEN_W){
+			TIRO_SAIU = 0;
+			initTiro(tiro);
+		}
+	}
+	if((tiro.r < 15) && (tiro.dir_r == 1) &&(TIRO_SAIU==0)){
+		if( VEL == 1){
+			tiro.r += (tiro.dir_r)*((tiro.velr)*4);
+		}else tiro.r += (tiro.dir_r)*(tiro.velr);
+		
+	}
+}
+	
+    // códigos do teclado
+
+    var esquerda = 37
+    var cima = 38
+    var direita = 39
+    var baixo = 40
+
+    var taxa = 10;
+    function desenhaCirculo(x, y, raio) 
+	{
+        pincel.fillStyle = 'blue';
+        pincel.beginPath();
+        pincel.arc(x, y, raio, 0, 2 * Math.PI);
+        pincel.fill();
+    }
+	
+    function limpaTela() 
+	{
+        pincel.clearRect(0, 0, SCREEN_W, SCREEN_H);
+		pincel.fillStyle = 'lightgray';
+		pincel.fillRect(0, 0, SCREEN_W, SCREEN_H);
+    }
+	
+	var _nave = new nave(10 + NAVE_W,SCREEN_H/2,4,0,0,'blue');
+	var _bloco = new bloco(SCREEN_W + (Math.round(Math.random())*10)%(SCREEN_W),
+		(Math.round(Math.random())*10)%(4*SCREEN_H/5),
+		SCREEN_W + (Math.round(Math.random())*10)%(SCREEN_W),
+		SCREEN_H/5 + (Math.round(Math.random())*10)%(2*SCREEN_H/5),
+		'gray');
+	var _tiro = new tiro(10 + NAVE_W,SCREEN_H/2,2,0.25,8,'red',0,0);
+	desenhaTiro(_tiro);
+	
+    function atualizaTela() 
+	{
+        limpaTela();
+		desenhaNave(_nave);
+		atualizaNave(_nave);
+		desenhaBloco(_bloco);
+		atualizaBloco(_bloco);
+		desenhaTiro(_tiro);
+		atualizaTiro(_tiro,_nave);
+    }
+
+    setInterval(atualizaTela, 60);
+
+   document.onkeydown = function(evento) 
+	{
+        if(evento.keyCode == cima) 
+		{
+		if(_nave.dir_y < -1){
+		_nave.dir_y = -1
+		}else{
+			_nave.dir_y--;
+			}
+        } else if (evento.keyCode == baixo) 
+		{
+            if(_nave.dir_y > 1){
+				_nave.dir_y = 1
+			}else{
+				_nave.dir_y++;
+			}
+        } else if (evento.keyCode == esquerda) 
+		{
+            if(_nave.dir_x < -1){
+			_nave.dir_x = -1
+			}else{
+				_nave.dir_x--;
+			}
+        } else if (evento.keyCode == direita) 
+		{
+            if(_nave.dir_x > 1){
+				_nave.dir_x = 1
+			}else{
+				_nave.dir_x++;
+			}
+        }
+    }
+	
+	document.onkeyup = function(evento) 
+	{
+        if(evento.keyCode == cima) 
+		{
+            if(_nave.dir_y > 1){
+				_nave.dir_y = 1
+			}else{
+				_nave.dir_y++;
+			}
+        } else if (evento.keyCode == baixo) 
+		{
+            if(_nave.dir_y < -1){
+				_nave.dir_y = -1
+			}else{
+				_nave.dir_y--;
+			}
+			
+        } else if (evento.keyCode == esquerda) 
+		{
+            if(_nave.dir_x > 1){
+				_nave.dir_x = 1
+			}else{
+				_nave.dir_x++;
+			}
+			
+        } else if (evento.keyCode == direita) 
+		{
+            if(_nave.dir_x < -1){
+				_nave.dir_x = -1
+			}else{
+				_nave.dir_x--;
+			}
+        }
+    }
+
+</script>
